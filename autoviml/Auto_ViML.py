@@ -50,6 +50,75 @@ from autoviml.QuickML_Ensembling import QuickML_Ensembling
 from autoviml.Auto_NLP import Auto_NLP
 import datetime
 
+#################################################################################
+from sklearn.model_selection import train_test_split
+import numpy as np
+from sklearn.metrics import f1_score
+import copy
+from inspect import signature
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import average_precision_score
+
+#############################################################################################################
+from pandas.api.types import is_datetime64_any_dtype as is_datetime
+
+
+###################################################################################
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.preprocessing import MultiLabelBinarizer
+
+
+from xgboost import XGBClassifier, XGBRegressor
+
+##################################################################################
+from sklearn import metrics
+
+
+################################################################################
+from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
+from sklearn.feature_selection import SelectKBest
+################################################################################
+from collections import OrderedDict
+
+
+#######################################################################################
+from sklearn.base import TransformerMixin
+
+import warnings
+
+warnings.filterwarnings("ignore")
+from sklearn.exceptions import DataConversionWarning
+
+warnings.filterwarnings(action='ignore', category=DataConversionWarning)
+####################################################################################
+from collections import Counter
+
+
+################################################################################
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import Lasso
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import GridSearchCV
+
+from sklearn.model_selection import cross_val_score, KFold, StratifiedKFold
+
+
+from sklearn.metrics import roc_curve, auc
+from scipy import interp
+import pandas as pd
+
+import os
+
+from dateutil.relativedelta import relativedelta
+from datetime import date
+
+
+from tensorflow.python.client import device_lib
+
+
+from catboost import CatBoostClassifier, CatBoostRegressor
 
 class AutoViML:
     def __init__(self):
@@ -115,7 +184,6 @@ class AutoViML:
     def check_if_GPU_exists():
         GPU_exists = False
         try:
-            from tensorflow.python.client import device_lib
             dev_list = device_lib.list_local_devices()
             print('Number of Processors on this device = %d' % len(dev_list))
             for i in range(len(dev_list)):
@@ -187,9 +255,6 @@ class AutoViML:
         return model_class
 
 
-    ###################################################################################
-    from sklearn.model_selection import StratifiedShuffleSplit
-    from sklearn.preprocessing import MultiLabelBinarizer
 
 
     def split_train_into_two(train_data, target, randomstate, modeltype):
@@ -220,72 +285,6 @@ class AutoViML:
             training_idx, test_idx = indices[:train_rows], indices[train_rows:]
             traindf, testdf = train_data.iloc[training_idx], train_data.iloc[test_idx]
         return traindf, testdf
-
-
-    #######################################################################################
-    from sklearn.base import TransformerMixin
-
-
-    class My_LabelEncoder(TransformerMixin):
-        """
-        ################################################################################################
-        ######  This Label Encoder class works just like sklearn's Label Encoder!  #####################
-        #####  You can label encode any column in a data frame using this new class. But unlike sklearn,
-        the beauty of this function is that it can take care of NaN's and unknown (future) values.
-        It uses the same fit() and fit_transform() methods of sklearn's LabelEncoder class.
-        ################################################################################################
-        Usage:
-              MLB = My_LabelEncoder()
-              train[column] = MLB.fit_transform(train[column])
-              test[column] = MLB.transform(test[column])
-        """
-
-        def __init__(self):
-            self.transformer = defaultdict(str)
-            self.inverse_transformer = defaultdict(str)
-
-        def fit(self, testx):
-            if isinstance(testx, pd.Series):
-                pass
-            elif isinstance(testx, np.ndarray):
-                testx = pd.Series(testx)
-            else:
-                return testx
-            outs = np.unique(testx.factorize()[0])
-            ins = np.unique(testx.factorize()[1]).tolist()
-            if -1 in outs:
-                ins.insert(0, np.nan)
-            self.transformer = dict(zip(ins, outs.tolist()))
-            self.inverse_transformer = dict(zip(outs.tolist(), ins))
-            return self
-
-        def transform(self, testx):
-            if isinstance(testx, pd.Series):
-                pass
-            elif isinstance(testx, np.ndarray):
-                testx = pd.Series(testx)
-            else:
-                return testx
-            ins = np.unique(testx.factorize()[1]).tolist()
-            missing = [x for x in ins if x not in self.transformer.keys()]
-            if len(missing) > 0:
-                for each_missing in missing:
-                    max_val = np.max(list(self.transformer.values())) + 1
-                    self.transformer[each_missing] = max_val
-                    self.inverse_transformer[max_val] = each_missing
-            ### now convert the input to transformer dictionary values
-            outs = testx.map(self.transformer).values
-            return outs
-
-        def inverse_transform(self, testx):
-            ### now convert the input to transformer dictionary values
-            if isinstance(testx, pd.Series):
-                outs = testx.map(self.inverse_transformer).values
-            elif isinstance(testx, np.ndarray):
-                outs = pd.Series(testx).map(self.inverse_transformer).values
-            else:
-                outs = testx[:]
-            return outs
 
 
     #################################################################################
@@ -391,10 +390,6 @@ class AutoViML:
             else:
                 final_ls.append(each_item)
         return final_ls
-
-
-    #############################################################################################################
-    from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
 
     #############################################################################################################
@@ -559,7 +554,6 @@ class AutoViML:
         if isinstance(Boosting_Flag, str):
             if Boosting_Flag.lower() == 'catboost':
                 try:
-                    from catboost import CatBoostClassifier, CatBoostRegressor
                     ### You don't want to do scaling on Catboost since integers can become float and it will error in training
                     perform_scaling_flag = False
                 except:
@@ -3286,7 +3280,6 @@ class AutoViML:
     ################################################################################
     ################      Find top features using XGB     ###################
     ################################################################################
-    from xgboost import XGBClassifier, XGBRegressor
 
 
     def find_top_features_xgb(train, preds, numvars, target, modeltype, corr_limit, verbose=0):
@@ -3886,10 +3879,6 @@ class AutoViML:
                 print('--------------------------------------------------------------------')
 
 
-    ##################################################################################
-    from sklearn import metrics
-
-
     def print_classification_metrics(y_test, y_probs, proba_flag=True):
         """
         #######  Send in the actual_values and prediction_probabilities for binary classes
@@ -3992,12 +3981,6 @@ class AutoViML:
                 lst.append(i)
         return lst
 
-
-    ################################################################################
-    from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
-    from sklearn.feature_selection import SelectKBest
-    ################################################################################
-    from collections import OrderedDict
 
 
     def return_dictionary_list(lst_of_tuples):
@@ -4129,12 +4112,6 @@ class AutoViML:
         return corr_pair_count_dict, rem_col_list, corr_list, correlated_pair_dict
 
 
-    ################################################################################
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.linear_model import Lasso
-    from sklearn.preprocessing import PolynomialFeatures
-    from sklearn.model_selection import GridSearchCV
 
 
     def add_poly_vars_select(data, numvars, targetvar, modeltype, poly_degree=2, Add_Poly=2, md='',
@@ -4361,7 +4338,6 @@ class AutoViML:
 
     ##################################################################################
     ## Import sklearn
-    from sklearn.model_selection import cross_val_score, KFold, StratifiedKFold
 
 
     def print_model_metrics(modeltype, reg, X, y, fit_flag=False, verbose=1):
@@ -4415,9 +4391,6 @@ class AutoViML:
 
 
     ##############################################################################################
-    from sklearn.metrics import roc_curve, auc
-    from scipy import interp
-    import pandas as pd
 
 
     def Draw_ROC_MC_ML(model, X_test, y_true, target, model_name, verbose=0):
@@ -4737,7 +4710,6 @@ class AutoViML:
 
 
     ############################################################
-    import os
 
 
     def write_file_to_folder(df, each_target, base_filename, verbose=1):
@@ -4849,8 +4821,6 @@ class AutoViML:
 
 
     ################################################################
-    from dateutil.relativedelta import relativedelta
-    from datetime import date
 
 
     ##### This is a little utility that computes age from year ####
@@ -4904,14 +4874,7 @@ class AutoViML:
 
     ########################################
     ########################################
-    import warnings
 
-    warnings.filterwarnings("ignore")
-    from sklearn.exceptions import DataConversionWarning
-
-    warnings.filterwarnings(action='ignore', category=DataConversionWarning)
-    ####################################################################################
-    from collections import Counter
 
 
     #######################################################################################
@@ -5093,17 +5056,6 @@ class AutoViML:
         else:
             model.fit(x_train, y_train)
         return model
-
-
-    #################################################################################
-    from sklearn.model_selection import train_test_split
-    import numpy as np
-    from sklearn.metrics import f1_score
-    import copy
-    from inspect import signature
-    from sklearn.preprocessing import label_binarize
-    from sklearn.metrics import precision_recall_curve
-    from sklearn.metrics import average_precision_score
 
 
     #############################################################################################
@@ -5304,8 +5256,6 @@ class AutoViML:
 
 
     ######################################################################################
-    from sklearn.metrics import plot_precision_recall_curve, plot_roc_curve
-    import seaborn as sns
 
 
     def plot_classification_results(m, X_true, y_true, y_pred, labels, target_names, each_target):
@@ -5331,9 +5281,6 @@ class AutoViML:
         except:
             print('Error: could not plot classification results. Continuing...')
 
-
-    from sklearn.metrics import classification_report, confusion_matrix
-    from sklearn.metrics import balanced_accuracy_score
 
 
     def print_classification_model_stats(y_true, predicted, m_thresh=0.5):
@@ -5372,7 +5319,6 @@ class AutoViML:
     #####################################################################
     #####     REGRESSION CHARTS AND METRICS ARE PRINTED PLOTTED HERE
     #####################################################################
-    import time
 
 
     def plot_regression_scatters(df, df2, num_vars, kind='scatter', plot_name=''):
@@ -5560,11 +5506,6 @@ class AutoViML:
         return np.mean(abs(perc_err))
 
 
-    ################################################################################
-    from sklearn.metrics import mean_absolute_error, mean_squared_error
-    from itertools import cycle
-    import matplotlib.pyplot as plt
-
 
     def plot_dfplot(dfplot, plot_title=""):
         figsize = (10, 10)
@@ -5584,9 +5525,6 @@ class AutoViML:
         plt.title('Predicted vs Actuals for Target = %s' % plot_title, fontsize=12)
         plt.show();
 
-
-    ###############################################################################
-    from collections import defaultdict
 
 
     def return_list_matching_keys(dicto, list_keys):
@@ -5708,12 +5646,6 @@ class AutoViML:
         return temp_train, num_vars, important_features, temp_test
 
 
-    #############################################################################
-    from imblearn.over_sampling import SMOTE, SVMSMOTE
-    from imblearn.over_sampling import ADASYN, SMOTENC
-    from sklearn.cluster import KMeans
-
-
     def kmeans_resampler(x_train, y_train, target, smote="", verbose=0):
         """
         This function converts a Regression problem into a Classification problem to enable SMOTE!
@@ -5759,10 +5691,6 @@ class AutoViML:
         return (x_train_ext, y_train_ext)
 
 
-    ##################################################################################
-    from sklearn.utils.class_weight import compute_class_weight
-
-
     def get_class_distribution(y_input):
         y_input = copy.deepcopy(y_input)
         classes = np.unique(y_input)
@@ -5805,3 +5733,65 @@ class AutoViML:
         X, y = smote.fit_resample(X, y)
         return (X, y)
     ###########################################################################################
+
+
+class My_LabelEncoder(TransformerMixin):
+    """
+    ################################################################################################
+    ######  This Label Encoder class works just like sklearn's Label Encoder!  #####################
+    #####  You can label encode any column in a data frame using this new class. But unlike sklearn,
+    the beauty of this function is that it can take care of NaN's and unknown (future) values.
+    It uses the same fit() and fit_transform() methods of sklearn's LabelEncoder class.
+    ################################################################################################
+    Usage:
+          MLB = My_LabelEncoder()
+          train[column] = MLB.fit_transform(train[column])
+          test[column] = MLB.transform(test[column])
+    """
+
+    def __init__(self):
+        self.transformer = defaultdict(str)
+        self.inverse_transformer = defaultdict(str)
+
+    def fit(self, testx):
+        if isinstance(testx, pd.Series):
+            pass
+        elif isinstance(testx, np.ndarray):
+            testx = pd.Series(testx)
+        else:
+            return testx
+        outs = np.unique(testx.factorize()[0])
+        ins = np.unique(testx.factorize()[1]).tolist()
+        if -1 in outs:
+            ins.insert(0, np.nan)
+        self.transformer = dict(zip(ins, outs.tolist()))
+        self.inverse_transformer = dict(zip(outs.tolist(), ins))
+        return self
+
+    def transform(self, testx):
+        if isinstance(testx, pd.Series):
+            pass
+        elif isinstance(testx, np.ndarray):
+            testx = pd.Series(testx)
+        else:
+            return testx
+        ins = np.unique(testx.factorize()[1]).tolist()
+        missing = [x for x in ins if x not in self.transformer.keys()]
+        if len(missing) > 0:
+            for each_missing in missing:
+                max_val = np.max(list(self.transformer.values())) + 1
+                self.transformer[each_missing] = max_val
+                self.inverse_transformer[max_val] = each_missing
+        ### now convert the input to transformer dictionary values
+        outs = testx.map(self.transformer).values
+        return outs
+
+    def inverse_transform(self, testx):
+        ### now convert the input to transformer dictionary values
+        if isinstance(testx, pd.Series):
+            outs = testx.map(self.inverse_transformer).values
+        elif isinstance(testx, np.ndarray):
+            outs = pd.Series(testx).map(self.inverse_transformer).values
+        else:
+            outs = testx[:]
+        return outs
