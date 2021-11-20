@@ -22,25 +22,20 @@ from sklearn.exceptions import DataConversionWarning
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-from numpy import inf
 ################################################################################
-import pdb
 ######## Import some multi-output models #######################################
-from sklearn.svm import LinearSVR, LinearSVC
-from sklearn.multioutput import MultiOutputRegressor, MultiOutputClassifier
+from sklearn.svm import LinearSVR
+from sklearn.multioutput import MultiOutputRegressor
 from sklearn.multioutput import RegressorChain, ClassifierChain
 from sklearn.multiclass import OneVsRestClassifier
 
-from sklearn.linear_model import Lasso
-from sklearn.model_selection import StratifiedShuffleSplit
 import matplotlib.pylab as plt
 # get_ipython().magic(u'matplotlib inline')
 from matplotlib.pylab import rcParams
 
 rcParams['figure.figsize'] = (10, 6)
-from sklearn.metrics import classification_report, confusion_matrix
 from functools import reduce
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import make_scorer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
@@ -53,9 +48,6 @@ from autoviml.QuickML_Stacking import QuickML_Stacking
 from autoviml.Transform_KM_Features import Transform_KM_Features
 from autoviml.QuickML_Ensembling import QuickML_Ensembling
 from autoviml.Auto_NLP import Auto_NLP
-import tensorflow
-
-import sys
 
 
 ##################################################################################
@@ -94,7 +86,6 @@ def return_factorized_dict(ls):
 
 
 #############################################################################################
-from sklearn.metrics import confusion_matrix
 
 
 def balanced_accuracy_score(y_true, y_pred, sample_weight=None,
@@ -115,7 +106,6 @@ def balanced_accuracy_score(y_true, y_pred, sample_weight=None,
 
 
 #############################################################################################
-import os
 
 
 def check_if_GPU_exists():
@@ -194,9 +184,7 @@ def analyze_problem_type(train, target, verbose=0):
 
 
 ###################################################################################
-from sklearn.model_selection import cross_val_score, StratifiedShuffleSplit, TimeSeriesSplit
-from sklearn.model_selection import ShuffleSplit
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
@@ -232,8 +220,6 @@ def split_train_into_two(train_data, target, randomstate, modeltype):
 
 #######################################################################################
 from sklearn.base import TransformerMixin
-from collections import defaultdict
-import pdb
 
 
 class My_LabelEncoder(TransformerMixin):
@@ -3898,9 +3884,6 @@ def marthas_columns(data, verbose=0):
 
 ##################################################################################
 from sklearn import metrics
-import matplotlib.pyplot as plt
-import copy
-import pdb
 
 
 def print_classification_metrics(y_test, y_probs, proba_flag=True):
@@ -4007,14 +3990,10 @@ def left_subtract(l1, l2):
 
 
 ################################################################################
-from collections import Counter
-import time
-from sklearn.feature_selection import chi2, mutual_info_regression, mutual_info_classif
+from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
 from sklearn.feature_selection import SelectKBest
 ################################################################################
-from collections import defaultdict
 from collections import OrderedDict
-import time
 
 
 def return_dictionary_list(lst_of_tuples):
@@ -4920,8 +4899,6 @@ def create_time_series_features(dtf, ts_column):
 
 
 ########################################
-from collections import Counter
-import time
 ########################################
 import warnings
 
@@ -4930,11 +4907,7 @@ from sklearn.exceptions import DataConversionWarning
 
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 ####################################################################################
-from sklearn.utils.class_weight import compute_class_weight
-from imblearn.over_sampling import SMOTE, SMOTENC
 from collections import Counter
-import copy
-import pdb
 
 
 #######################################################################################
@@ -5123,12 +5096,10 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.metrics import f1_score
 import copy
-import matplotlib.pyplot as plt
 from inspect import signature
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
-from itertools import cycle
 
 
 #############################################################################################
@@ -5288,8 +5259,6 @@ def Draw_MC_ML_PR_ROC_Curves(classifier, X_test, y_test):
 
 
 ######################################################################################
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def draw_confusion_maxtrix(y_test, y_pred, model_name='Model', ax=''):
@@ -5332,8 +5301,6 @@ def draw_confusion_maxtrix(y_test, y_pred, model_name='Model', ax=''):
 
 ######################################################################################
 from sklearn.metrics import plot_precision_recall_curve, plot_roc_curve
-from sklearn.metrics import classification_report
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 
@@ -5571,7 +5538,6 @@ def print_static_rmse(actual, predicted, start_from=0, verbose=0):
 
 
 ################################################################################
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 
 def print_rmse(y, y_hat):
@@ -5739,7 +5705,6 @@ def add_entropy_binning(temp_train, targ, num_vars, important_features, temp_tes
 
 
 #############################################################################
-from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin
 from imblearn.over_sampling import SMOTE, SVMSMOTE
 from imblearn.over_sampling import ADASYN, SMOTENC
 from sklearn.cluster import KMeans
