@@ -63,24 +63,20 @@ from sklearn.metrics import average_precision_score
 #############################################################################################################
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
 
-
 ###################################################################################
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MultiLabelBinarizer
-
 
 from xgboost import XGBClassifier, XGBRegressor
 
 ##################################################################################
 from sklearn import metrics
 
-
 ################################################################################
 from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
 from sklearn.feature_selection import SelectKBest
 ################################################################################
 from collections import OrderedDict
-
 
 #######################################################################################
 from sklearn.base import TransformerMixin
@@ -94,7 +90,6 @@ warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 ####################################################################################
 from collections import Counter
 
-
 ################################################################################
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -103,7 +98,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
 
 from sklearn.model_selection import cross_val_score, KFold, StratifiedKFold
-
 
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
@@ -114,13 +108,12 @@ import os
 from dateutil.relativedelta import relativedelta
 from datetime import date
 
-
 from tensorflow.python.client import device_lib
-
 
 from catboost import CatBoostClassifier, CatBoostRegressor
 
-class AutoViML:
+
+class Auto_ViML:
     def __init__(self):
         self.now = datetime.datetime.now().isoformat().replace(':', '-').split('.')[0]
 
@@ -143,7 +136,6 @@ class AutoViML:
         else:
             return int(pd.Series(counts).idxmin())
 
-
     ###############################################################################
     def return_factorized_dict(ls):
         """
@@ -157,9 +149,7 @@ class AutoViML:
             categs = np.insert(categs, np.where(factos == -1)[0][0], np.nan)
         return dict(zip(categs, factos))
 
-
     #############################################################################################
-
 
     def balanced_accuracy_score(y_true, y_pred, sample_weight=None,
                                 adjusted=False):
@@ -177,9 +167,7 @@ class AutoViML:
             score /= 1 - chance
         return score
 
-
     #############################################################################################
-
 
     def check_if_GPU_exists():
         GPU_exists = False
@@ -206,7 +194,6 @@ class AutoViML:
         else:
             return True
 
-
     #############################################################################################
     def modify_array_to_integer(y_pred, negative_flag=False):
         """
@@ -216,7 +203,6 @@ class AutoViML:
         if negative_flag:
             y_pred[y_pred < 0] = 0
         return y_pred
-
 
     ##########################################################################
     def analyze_problem_type(train, target, verbose=0):
@@ -254,9 +240,6 @@ class AutoViML:
             print('''\n################ %s VISUALIZATION Started #####################''' % model_class)
         return model_class
 
-
-
-
     def split_train_into_two(train_data, target, randomstate, modeltype):
         preds = [x for x in list(train_data) if x not in target]
         if modeltype.endswith('Classification'):
@@ -274,7 +257,8 @@ class AutoViML:
                 print('Splitting a multi-label dataset into train and validation')
                 mlb = MultiLabelBinarizer()
                 X = train_data[preds]
-                Y = pd.DataFrame(mlb.fit_transform(train_data[target].values), columns=mlb.classes_, index=train_data.index)
+                Y = pd.DataFrame(mlb.fit_transform(train_data[target].values), columns=mlb.classes_,
+                                 index=train_data.index)
                 traindf, testdf = train_test_split(train_data, test_size=0.2, shuffle=True, stratify=Y, random_state=99)
         else:
             indices = np.random.permutation(train_data.shape[0])
@@ -285,7 +269,6 @@ class AutoViML:
             training_idx, test_idx = indices[:train_rows], indices[train_rows:]
             traindf, testdf = train_data.iloc[training_idx], train_data.iloc[test_idx]
         return traindf, testdf
-
 
     #################################################################################
     def fill_missing_values_object_or_number(start_train, start_test, fill_num, col, str_flag=True):
@@ -311,7 +294,6 @@ class AutoViML:
                 start_test.loc[start_test[col].isnull(), new_missing_col] = 1
                 start_test[col] = start_test[col].fillna(fill_num)
         return start_train, start_test, missing_flag, new_missing_col
-
 
     #####################################################################################
     def convert_train_test_cat_col_to_numeric(start_train, start_test, col, str_flag=True):
@@ -380,7 +362,6 @@ class AutoViML:
             start_test[col] = start_test[col].map(dict_all)
         return start_train, start_test, missing_flag, new_missing_col
 
-
     #############################################################################################################
     def flatten_list(list_of_lists):
         final_ls = []
@@ -390,7 +371,6 @@ class AutoViML:
             else:
                 final_ls.append(each_item)
         return final_ls
-
 
     #############################################################################################################
     def Auto_ViML(train, target, test='', sample_submission='', hyper_param='RS', feature_reduction=True,
@@ -527,7 +507,8 @@ class AutoViML:
         tolerance = 0.001  #### This tolerance is needed to speed up Logistic Regression. Otherwise, SAGA takes too long!!
         #### 'lbfgs' is the fastest one but doesnt provide accurate results. Newton-CG is slower but accurate!
         #### SAGA is extremely slow. Even slower than Newton-CG. Liblinear is the fastest and as accurate as Newton-CG!
-        solvers = ['liblinear']  ### Other solvers for Logistic Regression model: ['newton-cg','lbfgs','saga','liblinear']
+        solvers = [
+            'liblinear']  ### Other solvers for Logistic Regression model: ['newton-cg','lbfgs','saga','liblinear']
         solver = 'liblinear'  ### lbfgs is the next fastest solver after liblinear. Useful for Multi-class problems!
         penalties = ['l2', 'l1']  ### This is to determine the penalties for LogisticRegression
         n_steps = 6  ### number of estimator steps between 100 and max_estims
@@ -1065,7 +1046,8 @@ class AutoViML:
                 if start_train[copy_preds].isnull().sum().sum() == 0:
                     print('Completed missing value Imputation. No more missing values in train.')
                     if verbose >= 1:
-                        print('    %d new missing value columns added: %s' % (len(missing_flag_cols), missing_flag_cols))
+                        print(
+                            '    %d new missing value columns added: %s' % (len(missing_flag_cols), missing_flag_cols))
                 else:
                     print('Error: Unable to complete missing value imputation in train. Exiting...')
                     return
@@ -1144,7 +1126,8 @@ class AutoViML:
             if len(numvars) > 1:
                 #### train_red contains reduced numeric variables with original and substituted poly/intxn variables
                 train_sel, lm, train_red, md, fin_xvars, feature_xvar_dict = add_poly_vars_select(train, numvars,
-                                                                                                  each_target, modeltype,
+                                                                                                  each_target,
+                                                                                                  modeltype,
                                                                                                   poly_degree, Add_Poly,
                                                                                                   md='',
                                                                                                   corr_limit=corr_limit,
@@ -1206,7 +1189,8 @@ class AutoViML:
                     train1, test1, best_nlp_transformer, max_features_limit = Auto_NLP(nlp_column,
                                                                                        train, test, each_target,
                                                                                        refit_metric,
-                                                                                       modeltype, top_nlp_features, verbose,
+                                                                                       modeltype, top_nlp_features,
+                                                                                       verbose,
                                                                                        build_model=False)
                     ####### Make sure you include the above new columns created in the predictor variables!
                     red_preds = [x for x in list(train1) if x not in target]
@@ -1335,11 +1319,14 @@ class AutoViML:
             y_train, y_cv = part_train[each_target], part_cv[each_target]
         else:
             y_train, y_cv = part_train[target], part_cv[target]
-        print('    Train CV Split completed with', "TRAIN rows = ", part_train.shape[0], ", CV rows = ", part_cv.shape[0])
+        print('    Train CV Split completed with', "TRAIN rows = ", part_train.shape[0], ", CV rows = ",
+              part_cv.shape[0])
         ################   IMPORTANT ENTROPY  BINNING FIRST TIME   #####################################
         ############   Add Entropy Binning of Continuous Variables Here ##############################
-        num_vars = train[important_features].select_dtypes(include=[np.float64, np.float32, np.float16]).columns.tolist()
-        saved_important_features = copy.deepcopy(important_features)  ### these are original features without '_bin' added
+        num_vars = train[important_features].select_dtypes(
+            include=[np.float64, np.float32, np.float16]).columns.tolist()
+        saved_important_features = copy.deepcopy(
+            important_features)  ### these are original features without '_bin' added
         #### saved_num_vars is an important variable: it contains the orig_num_vars before they were binned
         saved_num_vars = copy.deepcopy(num_vars)  ### these are original numeric features without '_bin' added
         if model_label == 'Single_Label':
@@ -1350,8 +1337,10 @@ class AutoViML:
                 ####    no numeric variables are removed. But next time, we will remove them later!
                 part_train, num_vars, important_features, part_cv = add_entropy_binning(part_train,
                                                                                         each_target, saved_num_vars,
-                                                                                        saved_important_features, part_cv,
-                                                                                        modeltype, entropy_binning=False,
+                                                                                        saved_important_features,
+                                                                                        part_cv,
+                                                                                        modeltype,
+                                                                                        entropy_binning=False,
                                                                                         verbose=verbose)
                 #### In saved_num_vars we send in all the continuous_vars but we bin only the top few vars.
                 ###  Those that are binned are removed from saved_num_vars and the remaining become num_vars
@@ -1737,7 +1726,8 @@ class AutoViML:
                                                   early_stopping_rounds=2000, boosting_type='Plain')
                     else:
                         xgbm = XGBClassifier(base_score=0.5, booster='gbtree', subsample=subsample,
-                                             colsample_bytree=col_sub_sample, gamma=1, learning_rate=0.1, max_delta_step=0,
+                                             colsample_bytree=col_sub_sample, gamma=1, learning_rate=0.1,
+                                             max_delta_step=0,
                                              max_depth=max_depth, min_child_weight=1, missing=-999, n_estimators=200,
                                              n_jobs=n_jobs, nthread=n_jobs, objective=objective,
                                              random_state=1, reg_alpha=0.5, reg_lambda=0.5,
@@ -2290,7 +2280,8 @@ class AutoViML:
                             X_ful = np.r_[X_train, X_cv]
                             y_ful = np.r_[y_train, y_cv]
                         model.fit(X_ful, y_ful)
-                        print('Using a Calibrated Classifier in this Multi_Classification dataset to improve results...')
+                        print(
+                            'Using a Calibrated Classifier in this Multi_Classification dataset to improve results...')
                         calibrator_flag = True
                     except:
                         calibrator_flag = False
@@ -2602,7 +2593,8 @@ class AutoViML:
                 #### When we Bin the second first time, we set the entropy_binning flag to True so
                 ####    that all numeric variables that are binned are removed. This way, only bins remain.
                 train, num_vars, important_features, test = add_entropy_binning(train, each_target,
-                                                                                saved_num_vars, important_features, test,
+                                                                                saved_num_vars, important_features,
+                                                                                test,
                                                                                 modeltype, entropy_binning=True,
                                                                                 verbose=verbose)
                 #### In saved_num_vars we send in all the continuous_vars but we bin only the top few vars.
@@ -3179,7 +3171,8 @@ class AutoViML:
                                 plt.figure()
                                 shap.summary_plot(shap_values, X_plot)
                 except:
-                    print('Could not plot SHAP values since SHAP is not installed or could not import SHAP in this machine')
+                    print(
+                        'Could not plot SHAP values since SHAP is not installed or could not import SHAP in this machine')
         else:
             ############ No Plotting feature importances for Multi-Label problems ##############
             print('    No feature importance plots available for Multi-Label problems')
@@ -3256,7 +3249,6 @@ class AutoViML:
         # return model, imp_features_df.index.tolist(), trainm, testm
         return model, important_features, trainm, testm
 
-
     ###############################################################################
     def plot_SHAP_values(m, X, modeltype, Boosting_Flag=False, matplotlib_flag=False, verbose=0):
         import shap
@@ -3276,11 +3268,9 @@ class AutoViML:
         else:
             shap.summary_plot(shap_values, X, plot_type="bar");
 
-
     ################################################################################
     ################      Find top features using XGB     ###################
     ################################################################################
-
 
     def find_top_features_xgb(train, preds, numvars, target, modeltype, corr_limit, verbose=0):
         """
@@ -3396,7 +3386,8 @@ class AutoViML:
                         X_train, X_cv, y_train, y_cv = X[:train_part], X[train_part:], y[:train_part], y[train_part:]
                     else:
                         X_train, X_cv, y_train, y_cv = train_test_split(X, y,
-                                                                        test_size=test_size, random_state=seed, stratify=y)
+                                                                        test_size=test_size, random_state=seed,
+                                                                        stratify=y)
                     try:
                         eval_set = [(X_train, y_train), (X_cv, y_cv)]
                         model_xgb.fit(X_train, y_train, early_stopping_rounds=early_stopping, eval_set=eval_set,
@@ -3419,7 +3410,8 @@ class AutoViML:
                         X_train, X_cv, y_train, y_cv = X[:train_part], X[train_part:], y[:train_part], y[train_part:]
                     else:
                         X_train, X_cv, y_train, y_cv = train_test_split(X, y,
-                                                                        test_size=test_size, random_state=seed, stratify=y)
+                                                                        test_size=test_size, random_state=seed,
+                                                                        stratify=y)
                     eval_set = [(X_train, y_train), (X_cv, y_cv)]
                     try:
                         model_xgb.fit(X_train, y_train, early_stopping_rounds=early_stopping,
@@ -3442,7 +3434,6 @@ class AutoViML:
         numvars = [x for x in numvars if x in important_features]
         important_cats = [x for x in important_cats if x in important_features]
         return important_features, numvars, important_cats
-
 
     ################################################################################
     def basket_recall(label, pred):
@@ -3475,7 +3466,6 @@ class AutoViML:
             jacc_arr = float(intersection / union)
         return jacc_arr
 
-
     ################################################################################
     def jaccard_singlelabel(label, pred):
         """
@@ -3506,7 +3496,6 @@ class AutoViML:
         except:
             return 0
 
-
     ################################################################################
     def jaccard_multilabel(label, pred):
         """
@@ -3536,7 +3525,6 @@ class AutoViML:
             return jacc_data_set
         except:
             return 0
-
 
     ################################################################################
     def plot_RS_params(cv_results, score, mname):
@@ -3571,10 +3559,12 @@ class AutoViML:
                 try:
                     df[each_param] = pd.to_numeric(df[each_param])
                     df[[each_param] + cols].groupby(each_param).mean().plot(kind='line',
-                                                                            title='%s for %s' % (each_param, mname), ax=ax1)
+                                                                            title='%s for %s' % (each_param, mname),
+                                                                            ax=ax1)
                 except:
                     df[[each_param] + cols].groupby(each_param).mean().plot(kind='bar', stacked=False,
-                                                                            title='%s for %s' % (each_param, mname), ax=ax1)
+                                                                            title='%s for %s' % (each_param, mname),
+                                                                            ax=ax1)
         #### This is to plot the test_mean_score against params to see how it increases
         for each_param in params:
             #### This is to find which parameters are non string and convert them to strings
@@ -3593,7 +3583,6 @@ class AutoViML:
         plt.xticks(rotation=45)
         plt.show();
         return df
-
 
     ################################################################################
     def plot_xgb_metrics(model, eval_metric, eval_set, modeltype, model_label='', model_name=""):
@@ -3623,7 +3612,6 @@ class AutoViML:
         plt.ylabel(eval_metric)
         plt.title('%s Train and Validation Metrics across Epochs (Early Stopping in effect)' % model_label)
         plt.show();
-
 
     ################################################################################
     ######### NEW And FAST WAY to CLASSIFY COLUMNS IN A DATA SET #######
@@ -3666,7 +3654,8 @@ class AutoViML:
         var_df['num_bool'] = var_df.apply(lambda x: 1 if x['type_of_column'] in [np.uint8,
                                                                                  np.uint16, np.uint32, np.uint64,
                                                                                  'int8', 'int16', 'int32', 'int64',
-                                                                                 'float16', 'float32', 'float64'] and len(
+                                                                                 'float16', 'float32',
+                                                                                 'float64'] and len(
             train[x['index']].value_counts()) == 2 else 0, axis=1)
         num_bool_vars = list(var_df[(var_df['num_bool'] == 1)]['index'])
         sum_all_cols['num_bool_vars'] = num_bool_vars
@@ -3693,7 +3682,8 @@ class AutoViML:
                     0.9 * len(train)) and col not in string_bool_vars:
                     var_df.loc[var_df['index'] == col, 'discrete_strings'] = 1
                 elif len(train[col].value_counts()) >= cat_limit and len(train[col].value_counts()
-                                                                         ) == len(train) and col not in string_bool_vars:
+                                                                         ) == len(
+                    train) and col not in string_bool_vars:
                     var_df.loc[var_df['index'] == col, 'id_col'] = 1
                 elif len(train[col].value_counts()) < cat_limit and col not in string_bool_vars:
                     var_df.loc[var_df['index'] == col, 'cat'] = 1
@@ -3777,7 +3767,8 @@ class AutoViML:
         if len(var_df.loc[float_or_cat == 1]) > 0:
             for col in var_df.loc[float_or_cat == 1]['index'].values.tolist():
                 if len(train[col].value_counts()) > 2 and len(train[col].value_counts()
-                                                              ) <= float_limit and len(train[col].value_counts()) <= len(
+                                                              ) <= float_limit and len(
+                    train[col].value_counts()) <= len(
                     train):
                     var_df.loc[var_df['index'] == col, 'cat'] = 1
                 else:
@@ -3855,7 +3846,6 @@ class AutoViML:
                 print(' Missing columns = %s' % left_subtract(list(train), flat_list))
         return sum_all_cols
 
-
     #################################################################################
     def marthas_columns(data, verbose=0):
         """
@@ -3877,7 +3867,6 @@ class AutoViML:
                         data[col].value_counts().head(2).to_dict()
                     ))
                 print('--------------------------------------------------------------------')
-
 
     def print_classification_metrics(y_test, y_probs, proba_flag=True):
         """
@@ -3971,7 +3960,6 @@ class AutoViML:
             print('\n#####################################################')
             return [accuracy, balanced_accuracy, precision, average_precision, f1_score, recall, 0]
 
-
     ##################################################################################################
     ##################################################################################################
     def left_subtract(l1, l2):
@@ -3981,8 +3969,6 @@ class AutoViML:
                 lst.append(i)
         return lst
 
-
-
     def return_dictionary_list(lst_of_tuples):
         """ Returns a dictionary of lists if you send in a list of Tuples"""
         orDict = defaultdict(list)
@@ -3990,7 +3976,6 @@ class AutoViML:
         for key, val in lst_of_tuples:
             orDict[key].append(val)
         return orDict
-
 
     ##################################################################################
     def remove_variables_using_fast_correlation(df, numvars, modeltype, target,
@@ -4052,7 +4037,8 @@ class AutoViML:
             fs.fit(df[corr_list].astype(np.float16), df[target])
             mutual_info = dict(zip(corr_list, fs.scores_))
             #### The first variable in list has the highest correlation to the target variable ###
-            sorted_by_mutual_info = [key for (key, val) in sorted(mutual_info.items(), key=lambda kv: kv[1], reverse=True)]
+            sorted_by_mutual_info = [key for (key, val) in
+                                     sorted(mutual_info.items(), key=lambda kv: kv[1], reverse=True)]
             #####   Now we select the final list of correlated variables ###########
             selected_corr_list = []
             #### select each variable by the highest mutual info and see what vars are correlated to it
@@ -4075,7 +4061,6 @@ class AutoViML:
                     print('    Following (%d) vars selected: %s' % (len(final_list), final_list))
         return final_list
 
-
     ###############################################################################################
     def count_freq_in_list(lst):
         """
@@ -4087,7 +4072,6 @@ class AutoViML:
         for i in temp:
             result.append((i, lst.count(i)))
         return result
-
 
     def find_corr_vars(correlation_dataframe, corr_limit=0.70):
         """
@@ -4110,9 +4094,6 @@ class AutoViML:
         corr_list = list(set(flatten(flatten_items(correlated_pair_dict))))
         rem_col_list = left_subtract(list(correlation_dataframe), list(OrderedDict.fromkeys(flat_corr_pair_list)))
         return corr_pair_count_dict, rem_col_list, corr_list, correlated_pair_dict
-
-
-
 
     def add_poly_vars_select(data, numvars, targetvar, modeltype, poly_degree=2, Add_Poly=2, md='',
                              corr_limit=0.70, scaling=True, fit_flag=False, verbose=0):
@@ -4201,7 +4182,8 @@ class AutoViML:
             else:
                 lm = LogisticRegression(multi_class='ovr', max_iter=10000)  ## logistic seems best among all
         ########### Here starts the conversion of X variables into Text feature variable names #####################
-        XP1 = pd.DataFrame(XP, index=orig_data_index, columns=xnames)  ## XP1 has all the Xvars:incl orig+poly+intxn vars
+        XP1 = pd.DataFrame(XP, index=orig_data_index,
+                           columns=xnames)  ## XP1 has all the Xvars:incl orig+poly+intxn vars
         x_vars = xnames[:n_orig_features]  ### x_vars contain x_variables such as 'x1'
         #### Feature_xvar_dict will map the X_vars, Squared_vars and Intxn_vars back to  Text vars in one variable
         feature_xvar_dict = dict(zip(x_vars, predictors))  ###
@@ -4221,7 +4203,8 @@ class AutoViML:
             ####  It is now time to cut down the original x_variables to just squared variables and originals here ####
             dict_vars = dict(
                 zip(predictors, x_vars))  ### this is a dictionary mapping original variables and their x-variables
-            reverse_dict_vars = dict([(y, x) for (x, y) in dict_vars.items()])  ### this maps the x-vars to original vars
+            reverse_dict_vars = dict(
+                [(y, x) for (x, y) in dict_vars.items()])  ### this maps the x-vars to original vars
             ##### Now let's convert Interaction x_variables into their corresponding text variables
             intxn_text_vars = []
             for each_item in intxn_vars:
@@ -4335,10 +4318,8 @@ class AutoViML:
             final_df = pd.DataFrame(final_df, index=orig_data_index, columns=xnames)
             return predictors, lm, final_df, md, xnames, ""
 
-
     ##################################################################################
     ## Import sklearn
-
 
     def print_model_metrics(modeltype, reg, X, y, fit_flag=False, verbose=1):
         ### If fit_flag is set to True, then you must return a fitted model ###
@@ -4369,7 +4350,6 @@ class AutoViML:
         else:
             return cv_scores.mean()
 
-
     ##############################################################################################
     def select_best_variables(md, reg, df, names, n_orig_features, Add_Poly, verbose=0):
         """
@@ -4389,9 +4369,7 @@ class AutoViML:
         # finalvars_index = [df[df['Interaction Variable Names']==x].index[0] for x in finalvars]
         return finalvars
 
-
     ##############################################################################################
-
 
     def Draw_ROC_MC_ML(model, X_test, y_true, target, model_name, verbose=0):
         figsize = (10, 6)
@@ -4456,7 +4434,8 @@ class AutoViML:
                     fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), label_binarize(y_pred, classes).ravel())
             except:
                 if y_test.ravel().shape[0] != y_pred.ravel().shape[0]:
-                    fpr["micro"], tpr["micro"], _ = roc_curve(y_test[:, :n_classes].ravel(), y_proba[:, :n_classes].ravel())
+                    fpr["micro"], tpr["micro"], _ = roc_curve(y_test[:, :n_classes].ravel(),
+                                                              y_proba[:, :n_classes].ravel())
                 else:
                     fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_proba[:, rare_class].ravel())
             try:
@@ -4527,7 +4506,6 @@ class AutoViML:
                 plt.legend(labels, loc="lower right")
                 plt.show();
 
-
     ###################################################################################
     # Removes duplicates from a list to return unique values - USED ONLYONCE
     def find_remove_duplicates(values):
@@ -4538,7 +4516,6 @@ class AutoViML:
                 output.append(value)
                 seen.add(value)
         return output
-
 
     ###################################################################################
     def split_data_new(trainfile, testfile, target, sep, modeltype='Regression', randomstate=0):
@@ -4677,7 +4654,6 @@ class AutoViML:
                 tsdata = testdf[:]
             return tradata, cvdata, tsdata, cols
 
-
     ############################################################################
     def filling_missing_values_simple(train, test, cats, nums):
         #### if you want to fill missing values using mean, median mode, go ahead!
@@ -4708,9 +4684,7 @@ class AutoViML:
                 test[num + '_log'] = np.log10(test[num]).fillna(0)
         return train, test
 
-
     ############################################################
-
 
     def write_file_to_folder(df, each_target, base_filename, verbose=1):
         if isinstance(each_target, str):
@@ -4726,7 +4700,6 @@ class AutoViML:
             if not os.path.isdir(dir_name):
                 os.mkdir(dir_name)
             df.to_csv(filename, index=False)
-
 
     ##############################################################
     def create_ts_features(df, tscol):
@@ -4750,7 +4723,8 @@ class AutoViML:
             if tscol + '_hour' in dt_adds:
                 DAYS = dict(zip(range(7), ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']))
                 df[tscol + '_dayofweek'] = df[tscol + '_dayofweek'].map(DAYS)
-                df.loc[:, tscol + '_dayofweek_hour_cross'] = df[tscol + '_dayofweek'] + " " + df[tscol + '_hour'].astype(
+                df.loc[:, tscol + '_dayofweek_hour_cross'] = df[tscol + '_dayofweek'] + " " + df[
+                    tscol + '_hour'].astype(
                     str)
                 dt_adds.append(tscol + '_dayofweek_hour_cross')
             df[tscol + '_quarter'] = df[tscol].dt.quarter.fillna(0).astype(int)
@@ -4819,16 +4793,13 @@ class AutoViML:
         df = df[dt_adds]
         return df
 
-
     ################################################################
-
 
     ##### This is a little utility that computes age from year ####
     def compute_age(year_string):
         today = date.today()
         age = relativedelta(today, year_string)
         return age.years
-
 
     #################################################################
     def create_time_series_features(dtf, ts_column):
@@ -4859,7 +4830,8 @@ class AutoViML:
                 if date_items[0] == 4:
                     ### If it is just a year variable alone, you should leave it as just a year!
                     age_col = ts_column + '_age_in_years'
-                    dtf[age_col] = dtf[ts_column].map(lambda x: pd.to_datetime(x, format='%Y')).apply(compute_age).values
+                    dtf[age_col] = dtf[ts_column].map(lambda x: pd.to_datetime(x, format='%Y')).apply(
+                        compute_age).values
                     return dtf[[ts_column, age_col]]
                 else:
                     ### if it is not a year alone, then convert it into a date time variable
@@ -4871,11 +4843,8 @@ class AutoViML:
             print('Error in Processing %s column for date time features. Continuing...' % ts_column)
         return dtf
 
-
     ########################################
     ########################################
-
-
 
     #######################################################################################
     ### Regression_Resampler is a neat library that returns a numpy list of classes for each
@@ -5002,11 +4971,11 @@ class AutoViML:
                     pd.DataFrame(y_df_res).plot(kind='hist', title='Dist. of target after Regression Resampler', ax=ax2,
                                                 color='b')
                 else:
-                    y_df.value_counts(1).plot(kind='bar', title='Distribution of classes before SMOTE', ax=ax1, color='r')
+                    y_df.value_counts(1).plot(kind='bar', title='Distribution of classes before SMOTE', ax=ax1,
+                                              color='r')
                     y_df_res.value_counts(1).plot(kind='bar', title='Distribution of classes after SMOTE', ax=ax2,
                                                   color='b')
         return model
-
 
     ##############################################################################################
     def model_training_smote(model, x_train, y_train, eval_set, eval_metric,
@@ -5057,15 +5026,12 @@ class AutoViML:
             model.fit(x_train, y_train)
         return model
 
-
     #############################################################################################
     def multi_f1(truth, predictions):
         return f1_score(truth, predictions, average=None)
 
-
     def multi_precision(truth, predictions):
         return precision_score(truth, predictions, average=None)
-
 
     ##############################################################################################
     def Draw_MC_ML_PR_ROC_Curves(classifier, X_test, y_test):
@@ -5165,7 +5131,8 @@ class AutoViML:
                                                                             :, :n_classes].ravel(),
                                                                             y_score[:, :n_classes].ravel())
             average_precision["micro"] = average_precision_score(Y_test[
-                                                                 :, :n_classes], y_score[:, :n_classes], average="micro")
+                                                                 :, :n_classes], y_score[:, :n_classes],
+                                                                 average="micro")
             print('Average precision score, micro-averaged over all classes: {0:0.2f}'
                   .format(average_precision["micro"]))
 
@@ -5213,9 +5180,7 @@ class AutoViML:
             plt.legend(lines, labels, loc='lower left', prop=dict(size=10))
             plt.show();
 
-
     ######################################################################################
-
 
     def draw_confusion_maxtrix(y_test, y_pred, model_name='Model', ax=''):
         """
@@ -5254,9 +5219,7 @@ class AutoViML:
         ax.set_ylabel('True label', fontsize=13)
         ax.set_xlabel('Predicted label', fontsize=13)
 
-
     ######################################################################################
-
 
     def plot_classification_results(m, X_true, y_true, y_pred, labels, target_names, each_target):
         try:
@@ -5280,8 +5243,6 @@ class AutoViML:
             axes[1, 1].set_title('Classification Report: %s' % each_target)
         except:
             print('Error: could not plot classification results. Continuing...')
-
-
 
     def print_classification_model_stats(y_true, predicted, m_thresh=0.5):
         """
@@ -5315,11 +5276,9 @@ class AutoViML:
             print('Error: printing classification model metrics. Continuing...')
             return 0
 
-
     #####################################################################
     #####     REGRESSION CHARTS AND METRICS ARE PRINTED PLOTTED HERE
     #####################################################################
-
 
     def plot_regression_scatters(df, df2, num_vars, kind='scatter', plot_name=''):
         """
@@ -5392,7 +5351,6 @@ class AutoViML:
                         counter += 1
         print('Regression Plots completed in %0.3f seconds' % (time.time() - start_time))
 
-
     ################################################################################
     def print_regression_model_stats(actuals, predicted, targets='', plot_name=''):
         """
@@ -5452,7 +5410,6 @@ class AutoViML:
             mae, mae_asp, rmse_asp = print_regression_metrics(actuals, predicted)
         return mae, mae_asp, rmse_asp
 
-
     ################################################################################
     def print_regression_metrics(actuals, predicted):
         mae = mean_absolute_error(actuals, predicted)
@@ -5466,10 +5423,10 @@ class AutoViML:
         print('    RMSE = %0.4f' % rmse)
         print('    MAE as %% std dev of Actuals = %0.1f%%' % (mae / abs(actuals).std() * 100))
         # Normalized RMSE print('RMSE = {:,.Of}'.format(rmse))
-        print('    Normalized RMSE (%% of MinMax of Actuals) = %0.0f%%' % (100 * rmse / abs(actuals.max() - actuals.min())))
+        print('    Normalized RMSE (%% of MinMax of Actuals) = %0.0f%%' % (
+                    100 * rmse / abs(actuals.max() - actuals.min())))
         print('    Normalized RMSE (%% of Std Dev of Actuals) = %0.0f%%' % (100 * rmse / actuals.std()))
         return mae, mae_asp, rmse_asp
-
 
     ################################################################################
     def print_static_rmse(actual, predicted, start_from=0, verbose=0):
@@ -5486,9 +5443,7 @@ class AutoViML:
             print('    Normalized RMSE = %0.1f%%' % (rmse * 100 / std_dev))
         return rmse, rmse / std_dev
 
-
     ################################################################################
-
 
     def print_rmse(y, y_hat):
         """
@@ -5497,15 +5452,12 @@ class AutoViML:
         mse = np.mean((y - y_hat) ** 2)
         return np.sqrt(mse)
 
-
     def print_mape(y, y_hat):
         """
         Calculating Mean Absolute Percent Error https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
         """
         perc_err = (100 * (y - y_hat)) / y
         return np.mean(abs(perc_err))
-
-
 
     def plot_dfplot(dfplot, plot_title=""):
         figsize = (10, 10)
@@ -5525,8 +5477,6 @@ class AutoViML:
         plt.title('Predicted vs Actuals for Target = %s' % plot_title, fontsize=12)
         plt.show();
 
-
-
     def return_list_matching_keys(dicto, list_keys):
         '''Return a list of values matching keys in a dictionary
         from a list of keys. Returns Values in the Same order as the List Keys.
@@ -5535,7 +5485,6 @@ class AutoViML:
         for each in list_keys:
             results.append(dicto[each])
         return results
-
 
     ##################################################################################
     def remove_highly_correlated_vars_fast(df, corr_limit=0.70):
@@ -5554,7 +5503,6 @@ class AutoViML:
         print();
         print('Highly correlated columns to remove: %s' % to_drop)
         return to_drop
-
 
     #####################################################################################
     def add_entropy_binning(temp_train, targ, num_vars, important_features, temp_test,
@@ -5645,7 +5593,6 @@ class AutoViML:
             print('    %s' % new_bincols)
         return temp_train, num_vars, important_features, temp_test
 
-
     def kmeans_resampler(x_train, y_train, target, smote="", verbose=0):
         """
         This function converts a Regression problem into a Classification problem to enable SMOTE!
@@ -5690,7 +5637,6 @@ class AutoViML:
         x_train_ext.drop(target, axis=1, inplace=True)
         return (x_train_ext, y_train_ext)
 
-
     def get_class_distribution(y_input):
         y_input = copy.deepcopy(y_input)
         classes = np.unique(y_input)
@@ -5708,7 +5654,6 @@ class AutoViML:
         print('    class_weighted_rows = %s' % class_weighted_rows)
         return class_weighted_rows
 
-
     def oversample_SMOTE(X, y):
         # input DataFrame
         # X →Independent Variable in DataFrame\
@@ -5719,7 +5664,6 @@ class AutoViML:
                          sampling_strategy=class_weighted_rows)
         X, y = smote.fit_resample(X, y)
         return (X, y)
-
 
     def oversample_ADASYN(X, y):
         # input DataFrame
