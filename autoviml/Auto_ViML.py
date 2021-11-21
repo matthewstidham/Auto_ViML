@@ -98,7 +98,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
 
 from sklearn.model_selection import cross_val_score, KFold, StratifiedKFold
-
+from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, mean_absolute_error
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
 import pandas as pd
@@ -112,12 +112,16 @@ from tensorflow.python.client import device_lib
 
 from catboost import CatBoostClassifier, CatBoostRegressor
 
+import time
 
-class Auto_ViML:
+from collections import defaultdict
+
+
+class AutoViML:
     def __init__(self):
         self.now = datetime.datetime.now().isoformat().replace(':', '-').split('.')[0]
 
-    def find_rare_class(classes, verbose=0):
+    def find_rare_class(self, classes, verbose=0):
         ######### Print the % count of each class in a Target variable  #####
         """
         Works on Multi Class too. Prints class percentages count of target variable.
@@ -137,7 +141,7 @@ class Auto_ViML:
             return int(pd.Series(counts).idxmin())
 
     ###############################################################################
-    def return_factorized_dict(ls):
+    def return_factorized_dict(self, ls):
         """
         ######  Factorize any list of values in a data frame using this neat function
         if your data has any NaN's it automatically marks it as -1 and returns that for NaN's
@@ -151,7 +155,7 @@ class Auto_ViML:
 
     #############################################################################################
 
-    def balanced_accuracy_score(y_true, y_pred, sample_weight=None,
+    def balanced_accuracy_score(self, y_true, y_pred, sample_weight=None,
                                 adjusted=False):
         C = confusion_matrix(y_true, y_pred, sample_weight=sample_weight)
         with np.errstate(divide='ignore', invalid='ignore'):
@@ -169,7 +173,7 @@ class Auto_ViML:
 
     #############################################################################################
 
-    def check_if_GPU_exists():
+    def check_if_GPU_exists(self):
         GPU_exists = False
         try:
             dev_list = device_lib.list_local_devices()
@@ -195,7 +199,7 @@ class Auto_ViML:
             return True
 
     #############################################################################################
-    def modify_array_to_integer(y_pred, negative_flag=False):
+    def modify_array_to_integer(self, y_pred, negative_flag=False):
         """
         Simiple utility to plug all negative values with 0 and turn them into integer
         """
@@ -205,7 +209,7 @@ class Auto_ViML:
         return y_pred
 
     ##########################################################################
-    def analyze_problem_type(train, target, verbose=0):
+    def analyze_problem_type(self, train, target, verbose=0):
         target = copy.deepcopy(target)
         cat_limit = 30  ### this determines the number of categories to name integers as classification ##
         float_limit = 15  ### this limits the number of float variable categories for it to become cat var
@@ -240,7 +244,7 @@ class Auto_ViML:
             print('''\n################ %s VISUALIZATION Started #####################''' % model_class)
         return model_class
 
-    def split_train_into_two(train_data, target, randomstate, modeltype):
+    def split_train_into_two(self, train_data, target, randomstate, modeltype):
         preds = [x for x in list(train_data) if x not in target]
         if modeltype.endswith('Classification'):
             if len(target) == 1:
@@ -271,7 +275,7 @@ class Auto_ViML:
         return traindf, testdf
 
     #################################################################################
-    def fill_missing_values_object_or_number(start_train, start_test, fill_num, col, str_flag=True):
+    def fill_missing_values_object_or_number(self, start_train, start_test, fill_num, col, str_flag=True):
         """
         ####  This is the easiest way to fill missing values using an object in both train and test
         #### This takes care of some categories that are present in train and not in test
@@ -296,7 +300,7 @@ class Auto_ViML:
         return start_train, start_test, missing_flag, new_missing_col
 
     #####################################################################################
-    def convert_train_test_cat_col_to_numeric(start_train, start_test, col, str_flag=True):
+    def convert_train_test_cat_col_to_numeric(self, start_train, start_test, col, str_flag=True):
         """
         ####  This is the easiest way to label encode object variables in both train and test
         #### This takes care of some categories that are present in train and not in test
@@ -363,7 +367,7 @@ class Auto_ViML:
         return start_train, start_test, missing_flag, new_missing_col
 
     #############################################################################################################
-    def flatten_list(list_of_lists):
+    def flatten_list(self, list_of_lists):
         final_ls = []
         for each_item in list_of_lists:
             if isinstance(each_item, list):
@@ -373,7 +377,7 @@ class Auto_ViML:
         return final_ls
 
     #############################################################################################################
-    def Auto_ViML(train, target, test='', sample_submission='', hyper_param='RS', feature_reduction=True,
+    def Auto_ViML(self, train, target, test='', sample_submission='', hyper_param='RS', feature_reduction=True,
                   scoring_parameter='logloss', Boosting_Flag=None, KMeans_Featurizer=False,
                   Add_Poly=0, Stacking_Flag=False, Binning_Flag=False,
                   Imbalanced_Flag=False, verbose=0):
@@ -3250,7 +3254,7 @@ class Auto_ViML:
         return model, important_features, trainm, testm
 
     ###############################################################################
-    def plot_SHAP_values(m, X, modeltype, Boosting_Flag=False, matplotlib_flag=False, verbose=0):
+    def plot_SHAP_values(self, m, X, modeltype, Boosting_Flag=False, matplotlib_flag=False, verbose=0):
         import shap
         # load JS visualization code to notebook
         if not matplotlib_flag:
@@ -3272,7 +3276,7 @@ class Auto_ViML:
     ################      Find top features using XGB     ###################
     ################################################################################
 
-    def find_top_features_xgb(train, preds, numvars, target, modeltype, corr_limit, verbose=0):
+    def find_top_features_xgb(self, train, preds, numvars, target, modeltype, corr_limit, verbose=0):
         """
         This is a fast utility that uses XGB to find top features. You
         It returns a list of important features.
@@ -3436,7 +3440,7 @@ class Auto_ViML:
         return important_features, numvars, important_cats
 
     ################################################################################
-    def basket_recall(label, pred):
+    def basket_recall(self, label, pred):
         """
         This tests the recall of a given basket of items in a label by the second basket, pred.
         It compares the 2 baskets (arrays or lists) named as label and pred, and finds common items
@@ -3467,7 +3471,7 @@ class Auto_ViML:
         return jacc_arr
 
     ################################################################################
-    def jaccard_singlelabel(label, pred):
+    def jaccard_singlelabel(self, label, pred):
         """
         This compares 2 baskets (could be lists or arrays): label and pred, and finds common items
         between the two. Then it divides that number by either rows or columns to return %.
@@ -3497,7 +3501,7 @@ class Auto_ViML:
             return 0
 
     ################################################################################
-    def jaccard_multilabel(label, pred):
+    def jaccard_multilabel(self, label, pred):
         """
         This compares 2 baskets (could be lists or arrays): label and pred, and finds common items
         between the two. Then it divides that number by either rows or columns to return %.
@@ -3527,7 +3531,7 @@ class Auto_ViML:
             return 0
 
     ################################################################################
-    def plot_RS_params(cv_results, score, mname):
+    def plot_RS_params(self, cv_results, score, mname):
         """
         ####### This plots the GridSearchCV Results sent in ############
         """
@@ -3585,7 +3589,7 @@ class Auto_ViML:
         return df
 
     ################################################################################
-    def plot_xgb_metrics(model, eval_metric, eval_set, modeltype, model_label='', model_name=""):
+    def plot_xgb_metrics(self, model, eval_metric, eval_set, modeltype, model_label='', model_name=""):
         height_size = 5
         width_size = 10
         if model_name.lower() == 'catboost':
@@ -3616,7 +3620,7 @@ class Auto_ViML:
     ################################################################################
     ######### NEW And FAST WAY to CLASSIFY COLUMNS IN A DATA SET #######
     ################################################################################
-    def classify_columns(df_preds, verbose=0):
+    def classify_columns(self, df_preds, verbose=0):
         """
         Takes a dataframe containing only predictors to be classified into various types.
         DO NOT SEND IN A TARGET COLUMN since it will try to include that into various columns.
@@ -3847,7 +3851,7 @@ class Auto_ViML:
         return sum_all_cols
 
     #################################################################################
-    def marthas_columns(data, verbose=0):
+    def marthas_columns(self, data, verbose=0):
         """
         This program is named  in honor of my one of students who came up with the idea for it.
         It's a neat way of printing data types and information compared to the boring describe() function in Pandas.
@@ -3868,7 +3872,7 @@ class Auto_ViML:
                     ))
                 print('--------------------------------------------------------------------')
 
-    def print_classification_metrics(y_test, y_probs, proba_flag=True):
+    def print_classification_metrics(self, y_test, y_probs, proba_flag=True):
         """
         #######  Send in the actual_values and prediction_probabilities for binary classes
         This will return back metrics and print them all in a neat format
@@ -3962,14 +3966,14 @@ class Auto_ViML:
 
     ##################################################################################################
     ##################################################################################################
-    def left_subtract(l1, l2):
+    def left_subtract(self, l1, l2):
         lst = []
         for i in l1:
             if i not in l2:
                 lst.append(i)
         return lst
 
-    def return_dictionary_list(lst_of_tuples):
+    def return_dictionary_list(self, lst_of_tuples):
         """ Returns a dictionary of lists if you send in a list of Tuples"""
         orDict = defaultdict(list)
         # iterating over list of tuples
@@ -3978,7 +3982,7 @@ class Auto_ViML:
         return orDict
 
     ##################################################################################
-    def remove_variables_using_fast_correlation(df, numvars, modeltype, target,
+    def remove_variables_using_fast_correlation(self, df, numvars, modeltype, target,
                                                 corr_limit=0.70, verbose=0):
         """
         #### THIS METHOD IS KNOWN AS THE SULA METHOD in HONOR OF my mother SULOCHANA SESHADRI #######
@@ -4062,7 +4066,7 @@ class Auto_ViML:
         return final_list
 
     ###############################################################################################
-    def count_freq_in_list(lst):
+    def count_freq_in_list(self, lst):
         """
         This counts the frequency of items in a list but MAINTAINS the order of appearance of items.
         This order is very important when you are doing certain functions. Hence this function!
@@ -4073,7 +4077,7 @@ class Auto_ViML:
             result.append((i, lst.count(i)))
         return result
 
-    def find_corr_vars(correlation_dataframe, corr_limit=0.70):
+    def find_corr_vars(self, correlation_dataframe, corr_limit=0.70):
         """
         This returns a dictionary of counts of each variable and how many vars it is correlated to in the dataframe
         """
@@ -4095,7 +4099,7 @@ class Auto_ViML:
         rem_col_list = left_subtract(list(correlation_dataframe), list(OrderedDict.fromkeys(flat_corr_pair_list)))
         return corr_pair_count_dict, rem_col_list, corr_list, correlated_pair_dict
 
-    def add_poly_vars_select(data, numvars, targetvar, modeltype, poly_degree=2, Add_Poly=2, md='',
+    def add_poly_vars_select(self, data, numvars, targetvar, modeltype, poly_degree=2, Add_Poly=2, md='',
                              corr_limit=0.70, scaling=True, fit_flag=False, verbose=0):
         """
         #### This adds Polynomial and Interaction Variables of any Size to a data set and returns the best vars
@@ -4321,7 +4325,7 @@ class Auto_ViML:
     ##################################################################################
     ## Import sklearn
 
-    def print_model_metrics(modeltype, reg, X, y, fit_flag=False, verbose=1):
+    def print_model_metrics(self, modeltype, reg, X, y, fit_flag=False, verbose=1):
         ### If fit_flag is set to True, then you must return a fitted model ###
         ###   Else you must return the cv_scores.mean only ####
         n_splits = 5
@@ -4351,7 +4355,7 @@ class Auto_ViML:
             return cv_scores.mean()
 
     ##############################################################################################
-    def select_best_variables(md, reg, df, names, n_orig_features, Add_Poly, verbose=0):
+    def select_best_variables(self, md, reg, df, names, n_orig_features, Add_Poly, verbose=0):
         """
         This program selects the top 10% of interaction variables created using linear modeling.
         """
@@ -4371,7 +4375,7 @@ class Auto_ViML:
 
     ##############################################################################################
 
-    def Draw_ROC_MC_ML(model, X_test, y_true, target, model_name, verbose=0):
+    def Draw_ROC_MC_ML(self, model, X_test, y_true, target, model_name, verbose=0):
         figsize = (10, 6)
         y_proba = model.predict_proba(X_test)
         predicted = copy.deepcopy(y_proba)
@@ -4508,7 +4512,7 @@ class Auto_ViML:
 
     ###################################################################################
     # Removes duplicates from a list to return unique values - USED ONLYONCE
-    def find_remove_duplicates(values):
+    def find_remove_duplicates(self, values):
         output = []
         seen = set()
         for value in values:
@@ -4518,7 +4522,7 @@ class Auto_ViML:
         return output
 
     ###################################################################################
-    def split_data_new(trainfile, testfile, target, sep, modeltype='Regression', randomstate=0):
+    def split_data_new(self, trainfile, testfile, target, sep, modeltype='Regression', randomstate=0):
         """
         Split your file or data frame into 2 or 3 splits. Stratified by Class automatically.
         Additionally, it will strip out non-numeric cols in your data if you need it.
@@ -4655,7 +4659,7 @@ class Auto_ViML:
             return tradata, cvdata, tsdata, cols
 
     ############################################################################
-    def filling_missing_values_simple(train, test, cats, nums):
+    def filling_missing_values_simple(self, train, test, cats, nums):
         #### if you want to fill missing values using mean, median mode, go ahead!
         ####  I don't recommend But some people seem to like it. #####
         for varm in cats:
@@ -4686,7 +4690,7 @@ class Auto_ViML:
 
     ############################################################
 
-    def write_file_to_folder(df, each_target, base_filename, verbose=1):
+    def write_file_to_folder(self, df, each_target, base_filename, verbose=1):
         if isinstance(each_target, str):
             dir_name = copy.deepcopy(each_target)
         else:
@@ -4702,7 +4706,7 @@ class Auto_ViML:
             df.to_csv(filename, index=False)
 
     ##############################################################
-    def create_ts_features(df, tscol):
+    def create_ts_features(self, df, tscol):
         """
         This takes in input a dataframe and a date variable.
         It then creates time series features using the pandas .dt.weekday kind of syntax.
@@ -4796,13 +4800,13 @@ class Auto_ViML:
     ################################################################
 
     ##### This is a little utility that computes age from year ####
-    def compute_age(year_string):
+    def compute_age(self, year_string):
         today = date.today()
         age = relativedelta(today, year_string)
         return age.years
 
     #################################################################
-    def create_time_series_features(dtf, ts_column):
+    def create_time_series_features(self, dtf, ts_column):
         """
         This creates between 8 and 10 date time features for each date variable. The number of features
         depends on whether it is just a year variable or a year+month+day and whether it has hours and mins+secs.
@@ -4853,7 +4857,7 @@ class Auto_ViML:
     ###  My sincere thanks to the creators of the library:
     ###     https://github.com/atif-hassan/Regression_ReSampling/
     #######################################################################################
-    def training_with_SMOTE(X_df, y_df, target, eval_set, model_input, Boosting_Flag, eval_metric,
+    def training_with_SMOTE(self, X_df, y_df, target, eval_set, model_input, Boosting_Flag, eval_metric,
                             modeltype, model_name,
                             training=True, minority_class=1, imp_cats=[],
                             calibrator_flag=False,
@@ -4978,7 +4982,7 @@ class Auto_ViML:
         return model
 
     ##############################################################################################
-    def model_training_smote(model, x_train, y_train, eval_set, eval_metric,
+    def model_training_smote(self, model, x_train, y_train, eval_set, eval_metric,
                              params, imp_cats, modeltype,
                              calibrator_flag, model_name, Boosting_Flag, model_label,
                              GPU_exists):
@@ -5027,14 +5031,14 @@ class Auto_ViML:
         return model
 
     #############################################################################################
-    def multi_f1(truth, predictions):
+    def multi_f1(self, truth, predictions):
         return f1_score(truth, predictions, average=None)
 
-    def multi_precision(truth, predictions):
+    def multi_precision(self, truth, predictions):
         return precision_score(truth, predictions, average=None)
 
     ##############################################################################################
-    def Draw_MC_ML_PR_ROC_Curves(classifier, X_test, y_test):
+    def Draw_MC_ML_PR_ROC_Curves(self, classifier, X_test, y_test):
         """
         ========================================================================================
         Precision-Recall Curves: Extension of Original Version in SKLearn's Documentation Page:
@@ -5182,7 +5186,7 @@ class Auto_ViML:
 
     ######################################################################################
 
-    def draw_confusion_maxtrix(y_test, y_pred, model_name='Model', ax=''):
+    def draw_confusion_maxtrix(self, y_test, y_pred, model_name='Model', ax=''):
         """
         This plots a beautiful confusion matrix based on input: ground truths and predictions
         """
@@ -5221,7 +5225,7 @@ class Auto_ViML:
 
     ######################################################################################
 
-    def plot_classification_results(m, X_true, y_true, y_pred, labels, target_names, each_target):
+    def plot_classification_results(self, m, X_true, y_true, y_pred, labels, target_names, each_target):
         try:
             fig, axes = plt.subplots(2, 2, figsize=(15, 15))
             plot_roc_curve(m, X_true, y_true, ax=axes[0, 1])
@@ -5244,7 +5248,7 @@ class Auto_ViML:
         except:
             print('Error: could not plot classification results. Continuing...')
 
-    def print_classification_model_stats(y_true, predicted, m_thresh=0.5):
+    def print_classification_model_stats(self, y_true, predicted, m_thresh=0.5):
         """
         This prints classification metrics in a nice format only for binary classes
         """
@@ -5280,7 +5284,7 @@ class Auto_ViML:
     #####     REGRESSION CHARTS AND METRICS ARE PRINTED PLOTTED HERE
     #####################################################################
 
-    def plot_regression_scatters(df, df2, num_vars, kind='scatter', plot_name=''):
+    def plot_regression_scatters(self, df, df2, num_vars, kind='scatter', plot_name=''):
         """
         Great way to plot continuous variables fast. Just sent them in and it will take care of the rest!
         """
@@ -5352,7 +5356,7 @@ class Auto_ViML:
         print('Regression Plots completed in %0.3f seconds' % (time.time() - start_time))
 
     ################################################################################
-    def print_regression_model_stats(actuals, predicted, targets='', plot_name=''):
+    def print_regression_model_stats(self, actuals, predicted, targets='', plot_name=''):
         """
         This program prints and returns MAE, RMSE, MAPE.
         If you like the MAE and RMSE to have a title or something, just give that
@@ -5411,7 +5415,7 @@ class Auto_ViML:
         return mae, mae_asp, rmse_asp
 
     ################################################################################
-    def print_regression_metrics(actuals, predicted):
+    def print_regression_metrics(self, actuals, predicted):
         mae = mean_absolute_error(actuals, predicted)
         mae_asp = (mean_absolute_error(actuals, predicted) / actuals.std()) * 100
         rmse_asp = (np.sqrt(mean_squared_error(actuals, predicted)) / actuals.std()) * 100
@@ -5424,12 +5428,12 @@ class Auto_ViML:
         print('    MAE as %% std dev of Actuals = %0.1f%%' % (mae / abs(actuals).std() * 100))
         # Normalized RMSE print('RMSE = {:,.Of}'.format(rmse))
         print('    Normalized RMSE (%% of MinMax of Actuals) = %0.0f%%' % (
-                    100 * rmse / abs(actuals.max() - actuals.min())))
+                100 * rmse / abs(actuals.max() - actuals.min())))
         print('    Normalized RMSE (%% of Std Dev of Actuals) = %0.0f%%' % (100 * rmse / actuals.std()))
         return mae, mae_asp, rmse_asp
 
     ################################################################################
-    def print_static_rmse(actual, predicted, start_from=0, verbose=0):
+    def print_static_rmse(self, actual, predicted, start_from=0, verbose=0):
         """
         this calculates the ratio of the rmse error to the standard deviation of the actuals.
         This ratio should be below 1 for a model to be considered useful.
@@ -5445,21 +5449,21 @@ class Auto_ViML:
 
     ################################################################################
 
-    def print_rmse(y, y_hat):
+    def print_rmse(self, y, y_hat):
         """
         Calculating Root Mean Square Error https://en.wikipedia.org/wiki/Root-mean-square_deviation
         """
         mse = np.mean((y - y_hat) ** 2)
         return np.sqrt(mse)
 
-    def print_mape(y, y_hat):
+    def print_mape(self, y, y_hat):
         """
         Calculating Mean Absolute Percent Error https://en.wikipedia.org/wiki/Mean_absolute_percentage_error
         """
         perc_err = (100 * (y - y_hat)) / y
         return np.mean(abs(perc_err))
 
-    def plot_dfplot(dfplot, plot_title=""):
+    def plot_dfplot(self, dfplot, plot_title=""):
         figsize = (10, 10)
         colors = cycle('byrcmgkbyrcmgkbyrcmgkbyrcmgk')
         plt.figure(figsize=figsize)
@@ -5477,7 +5481,7 @@ class Auto_ViML:
         plt.title('Predicted vs Actuals for Target = %s' % plot_title, fontsize=12)
         plt.show();
 
-    def return_list_matching_keys(dicto, list_keys):
+    def return_list_matching_keys(self, dicto, list_keys):
         '''Return a list of values matching keys in a dictionary
         from a list of keys. Returns Values in the Same order as the List Keys.
         '''
@@ -5487,7 +5491,7 @@ class Auto_ViML:
         return results
 
     ##################################################################################
-    def remove_highly_correlated_vars_fast(df, corr_limit=0.70):
+    def remove_highly_correlated_vars_fast(self, df, corr_limit=0.70):
         """
         This is a simple method to remove highly correlated features fast using Pearson's Correlation.
         Use this only for float and integer variables. It will automatically select those only.
@@ -5505,7 +5509,7 @@ class Auto_ViML:
         return to_drop
 
     #####################################################################################
-    def add_entropy_binning(temp_train, targ, num_vars, important_features, temp_test,
+    def add_entropy_binning(self, temp_train, targ, num_vars, important_features, temp_test,
                             modeltype, entropy_binning, verbose=0):
         """
             ######   This is where we do ENTROPY BINNING OF CONTINUOUS VARS ###########
@@ -5593,7 +5597,7 @@ class Auto_ViML:
             print('    %s' % new_bincols)
         return temp_train, num_vars, important_features, temp_test
 
-    def kmeans_resampler(x_train, y_train, target, smote="", verbose=0):
+    def kmeans_resampler(self, x_train, y_train, target, smote="", verbose=0):
         """
         This function converts a Regression problem into a Classification problem to enable SMOTE!
         It is a very simple way to send your x_train, y_train in and get back an oversampled x_train, y_train.
@@ -5637,7 +5641,7 @@ class Auto_ViML:
         x_train_ext.drop(target, axis=1, inplace=True)
         return (x_train_ext, y_train_ext)
 
-    def get_class_distribution(y_input):
+    def get_class_distribution(self, y_input):
         y_input = copy.deepcopy(y_input)
         classes = np.unique(y_input)
         xp = Counter(y_input)
@@ -5654,7 +5658,7 @@ class Auto_ViML:
         print('    class_weighted_rows = %s' % class_weighted_rows)
         return class_weighted_rows
 
-    def oversample_SMOTE(X, y):
+    def oversample_SMOTE(self, X, y):
         # input DataFrame
         # X →Independent Variable in DataFrame\
         # y →dependent Variable in Pandas DataFrame format
@@ -5665,7 +5669,7 @@ class Auto_ViML:
         X, y = smote.fit_resample(X, y)
         return (X, y)
 
-    def oversample_ADASYN(X, y):
+    def oversample_ADASYN(self, X, y):
         # input DataFrame
         # X →Independent Variable in DataFrame\
         # y →dependent Variable in Pandas DataFrame format
