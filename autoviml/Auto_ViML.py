@@ -492,6 +492,11 @@ class AutoViML:
         max_neighbors = 100  #### this is max number of neighbors used in k_neighbors for RandomizedSearchCV algo
         n_jobs = -1  #### In case of KNN, having n_jobs=-1 gives an error on Windows environments. Hence avoid.
         chain_flag = False
+
+        print("Create output folder")
+        now = datetime.datetime.now().isoformat().replace(':', '-').split('.')[0]
+        os.mkdir(now)
+
         print('##############  D A T A   S E T  A N A L Y S I S  #######################')
         ##########  I F   CATBOOST  IS REQUESTED, THEN CHECK IF IT IS INSTALLED #######################
         if hyper_param is not None:
