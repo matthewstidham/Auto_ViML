@@ -15,25 +15,13 @@
 # limitations under the License.
 ################################################################################
 import warnings
-
-warnings.filterwarnings("ignore")
 from sklearn.exceptions import DataConversionWarning
-
-warnings.filterwarnings(action='ignore', category=DataConversionWarning)
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-################################################################################
-######## Import some multi-output models #######################################
 from sklearn.svm import LinearSVR
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.multioutput import RegressorChain, ClassifierChain
 from sklearn.multiclass import OneVsRestClassifier
-
 import matplotlib.pylab as plt
-# get_ipython().magic(u'matplotlib inline')
 from matplotlib.pylab import rcParams
-
-rcParams['figure.figsize'] = (10, 6)
 from functools import reduce
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import make_scorer
@@ -49,8 +37,6 @@ from autoviml.Transform_KM_Features import Transform_KM_Features
 from autoviml.QuickML_Ensembling import QuickML_Ensembling
 from autoviml.Auto_NLP import Auto_NLP
 import datetime
-
-#################################################################################
 from sklearn.model_selection import train_test_split
 import numpy as np
 from sklearn.metrics import f1_score
@@ -59,62 +45,39 @@ from inspect import signature
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
-
-#############################################################################################################
 from pandas.api.types import is_datetime64_any_dtype as is_datetime
-
-###################################################################################
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import MultiLabelBinarizer
-
 from xgboost import XGBClassifier, XGBRegressor
-
-##################################################################################
 from sklearn import metrics
-
-################################################################################
 from sklearn.feature_selection import mutual_info_regression, mutual_info_classif
 from sklearn.feature_selection import SelectKBest
-################################################################################
 from collections import OrderedDict
-
-#######################################################################################
 from sklearn.base import TransformerMixin
-
 import warnings
-
-warnings.filterwarnings("ignore")
 from sklearn.exceptions import DataConversionWarning
-
-warnings.filterwarnings(action='ignore', category=DataConversionWarning)
-####################################################################################
 from collections import Counter
-
-################################################################################
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Lasso
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import GridSearchCV
-
 from sklearn.model_selection import cross_val_score, KFold, StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, mean_absolute_error
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
 import pandas as pd
-
 import os
-
 from dateutil.relativedelta import relativedelta
 from datetime import date
-
 from tensorflow.python.client import device_lib
-
 from catboost import CatBoostClassifier, CatBoostRegressor
-
 import time
-
 from collections import defaultdict
+
+warnings.filterwarnings(action='ignore', category=DataConversionWarning)
+warnings.filterwarnings("ignore")
+rcParams['figure.figsize'] = (10, 6)
 
 
 class AutoViML:
