@@ -1534,6 +1534,7 @@ class AutoViML:
                                              subsample=0.7, bootstrap_type='Bernoulli',
                                              metric_period=500,
                                              early_stopping_rounds=2000, boosting_type='Plain')
+                    xgbm.set_params(train_dir=os.path.join(self.now, 'catboost-info'))
                 else:
                     objective = 'reg:squarederror'
                     if model_label == 'Multi_Label':
@@ -1689,6 +1690,7 @@ class AutoViML:
                                                   subsample=subsample, bootstrap_type='Bernoulli',
                                                   metric_period=500,
                                                   early_stopping_rounds=2000, boosting_type='Plain')
+                        xgbm.set_params(train_dir=os.path.join(self.now,'catboost-info'))
                     else:
                         xgbm = XGBClassifier(base_score=0.5, booster='gbtree', subsample=subsample,
                                              colsample_bytree=col_sub_sample, gamma=1, learning_rate=0.1,
@@ -4655,14 +4657,14 @@ class AutoViML:
             dir_name = copy.deepcopy(each_target)
         else:
             dir_name = str(each_target)
-        filename = os.path.join(dir_name, base_filename)
+        filename = os.path.join(self.now, dir_name, base_filename)
         if verbose >= 1:
             if os.name == 'nt':
                 print('    Saving predictions to .\%s' % filename)
             else:
                 print('    Saving predictions to ./%s' % filename)
-            if not os.path.isdir(dir_name):
-                os.mkdir(dir_name)
+            if not os.path.isdir(os.path.join(self.now, dir_name)):
+                os.mkdir(os.path.join(self.now, dir_name))
             df.to_csv(filename, index=False)
 
     ##############################################################
