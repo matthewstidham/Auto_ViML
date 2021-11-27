@@ -25,7 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import make_scorer
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, mean_squared_error
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import RepeatedKFold, RepeatedStratifiedKFold
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
